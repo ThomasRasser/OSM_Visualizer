@@ -807,8 +807,50 @@ const createTagFilters = debounce(function() {
 
   const tagsWithCounts = extractUniqueTags();
 
+  // Create filter header with search
+  const filterHeader = document.createElement('div');
+  filterHeader.className = 'filter-header';
+
+  const searchContainer = document.createElement('div');
+  searchContainer.className = 'filter-search-container';
+
+  const searchInput = document.createElement('input');
+  searchInput.type = 'text';
+  searchInput.placeholder = 'Search filters...';
+  searchInput.className = 'filter-search-input';
+
+  searchInput.addEventListener('input', (e) => {
+    const searchValue = e.target.value.toLowerCase();
+    const filterElements = tagFiltersContainer.querySelectorAll('.filter-tag');
+
+    filterElements.forEach(el => {
+      const labelText = el.querySelector('label').textContent.toLowerCase();
+      if (searchValue === '' || labelText.includes(searchValue)) {
+        el.style.display = '';
+      } else {
+        el.style.display = 'none';
+      }
+    });
+  });
+
+  const filterCount = document.createElement('div');
+  filterCount.className = 'filter-value-count';
+  filterCount.textContent = `${tagsWithCounts.length} filters`;
+
+  searchContainer.appendChild(searchInput);
+  searchContainer.appendChild(filterCount);
+  filterHeader.appendChild(searchContainer);
+
+  // Clear and add the header
+  tagFiltersContainer.innerHTML = '';
+  tagFiltersContainer.appendChild(filterHeader);
+
   // Use DocumentFragment for better performance
   const fragment = document.createDocumentFragment();
+
+  // Create a div to contain just the filter tags (for better scrolling)
+  const filterTagsContainer = document.createElement('div');
+  filterTagsContainer.className = 'filter-tags-list';
 
   tagsWithCounts.forEach(({ tag, count }) => {
     const filterContainer = document.createElement('div');
@@ -847,11 +889,12 @@ const createTagFilters = debounce(function() {
 
     filterContainer.appendChild(checkbox);
     filterContainer.appendChild(label);
-    fragment.appendChild(filterContainer);
+    filterTagsContainer.appendChild(filterContainer);
   });
 
-  // Replace all filters at once
-  tagFiltersContainer.innerHTML = '';
+  fragment.appendChild(filterTagsContainer);
+
+  // Add fragment to container
   tagFiltersContainer.appendChild(fragment);
 
   // Update value filters
