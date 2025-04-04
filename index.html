@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSM Data Viewer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="map-container">
+            <canvas id="mapCanvas"></canvas>
+        </div>
+        <div class="sidebar">
+            <div class="section">
+                <h3>Element Data</h3>
+                <pre id="nodeData">Click on a node or way to see its data</pre>
+            </div>
+            <div class="section">
+                <h3>Settings</h3>
+                <div class="setting">
+                    <label for="nodeSize">Node Size:</label>
+                    <div class="size-control">
+                        <button id="nodeSizeDecrease">-</button>
+                        <span id="nodeSizeValue">2</span>
+                        <button id="nodeSizeIncrease">+</button>
+                    </div>
+                </div>
+                <div class="setting">
+                    <label for="nodeColor">Node Color:</label>
+                    <input type="color" id="nodeColor" value="#ff0000">
+                </div>
+                <div class="setting">
+                    <label for="wayWidth">Way Width:</label>
+                    <div class="size-control">
+                        <button id="wayWidthDecrease">-</button>
+                        <span id="wayWidthValue">2</span>
+                        <button id="wayWidthIncrease">+</button>
+                    </div>
+                </div>
+                <div class="setting">
+                    <label for="wayColor">Way Color:</label>
+                    <input type="color" id="wayColor" value="#0000ff">
+                </div>
+                <div class="setting">
+                    <label for="showLabels">Show Labels:</label>
+                    <input type="checkbox" id="showLabels" checked>
+                </div>
+                <div class="setting">
+                    <button id="resetView">Reset View</button>
+                </div>
+            </div>
+            <div class="section">
+                <h3>Display Filters</h3>
+                <div id="tagFilters" class="filters">
+                    <!-- Tag filters will be dynamically generated -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
