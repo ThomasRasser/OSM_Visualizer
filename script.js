@@ -19,6 +19,9 @@ const showLabelsCheckbox = document.getElementById('showLabels');
 const resetViewButton = document.getElementById('resetView');
 const enableAllFiltersButton = document.getElementById('enableAllFilters');
 const disableAllFiltersButton = document.getElementById('disableAllFilters');
+const dataFileSelector = document.getElementById('dataFile');
+const loadingIndicator = document.getElementById('loadingIndicator');
+const loadingText = document.getElementById('loadingText');
 
 // App state
 let nodeSize = 2;
@@ -32,6 +35,7 @@ let hoveredElement = null;
 let selectedElement = null;
 let nodes = [];
 let ways = [];
+let currentDataFile = 'data/disneyland_paris.json'; // Default data file
 
 // Map calculations
 let minLat = Infinity, maxLat = -Infinity;
@@ -904,14 +908,28 @@ const createTagFilters = debounce(function() {
 }, 300);
 
 // Function to load the OSM data from file with progress feedback
-async function loadOsmData() {
+async function loadOsmData(dataFile) {
   try {
     console.time('Data load');
 
     // Show loading state
+    loadingIndicator.classList.add('active');
+    loadingText.textContent = 'Loading...';
     nodeDataDisplay.textContent = 'Loading data...';
 
-    const response = await fetch('data/disneyland_paris_ways_and_nodes.json');
+    // Reset state for new data
+    nodes = [];
+    ways = [];
+    nodeMap = {};
+    spatialGrid = {};
+    screenCoords = {};
+    activeFilters = {};
+    activeFilterValues = {};
+    hoveredElement = null;
+    selectedElement = null;
+    extractUniqueTags.cache = null;
+
+    const response = await fetch(dataFile);
 
     if (!response.ok) {
       throw new Error(`Failed to load data: ${response.status} ${response.statusText}`);
@@ -937,6 +955,7 @@ async function loadOsmData() {
       // Report progress
       if (contentLength) {
         const percentComplete = Math.round((receivedLength / contentLength) * 100);
+        loadingText.textContent = `Loading: ${percentComplete}%`;
         nodeDataDisplay.textContent = `Loading data: ${percentComplete}%`;
       }
     }
@@ -954,6 +973,7 @@ async function loadOsmData() {
     osmData = JSON.parse(json);
 
     console.time('Process data');
+    loadingText.textContent = 'Processing...';
     nodeDataDisplay.textContent = 'Processing data...';
 
     // Process data in chunks using setTimeout to avoid blocking the UI
@@ -969,11 +989,13 @@ async function loadOsmData() {
       calculateBounds();
 
       // Create tag filters once data is loaded
+      loadingText.textContent = 'Building filters...';
       createTagFilters();
 
       // Build spatial index
       setTimeout(() => {
         // Now build the spatial index for performance
+        loadingText.textContent = 'Building spatial index...';
         nodeDataDisplay.textContent = 'Building spatial index...';
 
         // Reset coordinate cache
@@ -982,6 +1004,7 @@ async function loadOsmData() {
         // Draw the map
         setTimeout(() => {
           nodeDataDisplay.textContent = 'Click on a node or way to see its data';
+          loadingIndicator.classList.remove('active');
           drawMap();
 
           // Build spatial index after initial render
@@ -996,6 +1019,7 @@ async function loadOsmData() {
   } catch (error) {
     console.error('Error loading OSM data:', error);
     nodeDataDisplay.textContent = `Error loading data: ${error.message}`;
+    loadingIndicator.classList.remove('active');
   }
 }
 
@@ -1035,12 +1059,21 @@ const handleResize = throttle(() => {
 
 // Initialize the application
 function init() {
+  // Set data file selector
+  dataFileSelector.value = currentDataFile;
+
   // Load the data first
-  loadOsmData();
+  loadOsmData(currentDataFile);
 
   // Set up event listeners
   canvas.addEventListener('mousemove', handleMouseMove);
   canvas.addEventListener('click', handleMouseClick);
+
+  // Data file selector
+  dataFileSelector.addEventListener('change', (e) => {
+    currentDataFile = e.target.value;
+    loadOsmData(currentDataFile);
+  });
 
   // Node size buttons
   nodeSizeIncrease.addEventListener('click', () => {

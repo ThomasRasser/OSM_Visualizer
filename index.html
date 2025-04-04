@@ -9,6 +9,20 @@
 <body>
     <div class="container">
         <div class="map-container">
+            <div class="map-controls">
+                <div class="file-selector">
+                    <label for="dataFile">Data File:</label>
+                    <select id="dataFile">
+                        <option value="data/disneyland_paris.json">Disneyland Paris</option>
+                        <option value="data/prater_vienna.json">Prater Vienna</option>
+                        <!-- Add more data files as needed -->
+                    </select>
+                </div>
+                <div class="loading-indicator" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <span id="loadingText">Loading...</span>
+                </div>
+            </div>
             <canvas id="mapCanvas"></canvas>
         </div>
         <div class="sidebar">

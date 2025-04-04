@@ -1,15 +1,23 @@
-.PHONY: all clean
+.PHONY: all clean disneyland prater europapark
 
-all: disneyland_paris_ways_and_nodes.json
+all: clean disneyland_paris.json prater_vienna.json
 
-disneyland_paris_ways_and_nodes.json:
-	@echo "Fetching ways and their nodes in Disneyland Paris..."
+disneyland_paris.json:
+	@echo "Fetching Disneyland (Paris) data..."
 	@curl -s -X POST https://overpass-api.de/api/interpreter \
 	  -H "Content-Type: application/x-www-form-urlencoded" \
 	  --data-urlencode "data=[out:json][timeout:60];area[\"name\"=\"Disneyland Paris\"]->.a;(way(area.a););(._;>;);out body;" \
 	  -o $@
-	@echo "Data saved to $@"
+	@echo "Saved to $@"
+
+prater_vienna.json:
+	@echo "Fetching Prater (Vienna) data..."
+	@curl -s -X POST https://overpass-api.de/api/interpreter \
+	  -H "Content-Type: application/x-www-form-urlencoded" \
+	  --data-urlencode "data=[out:json][timeout:60];area[\"name\"=\"Wurstelprater\"]->.a;(way(area.a););(._;>;);out body;" \
+	  -o $@
+	@echo "Saved to $@"
 
 clean:
 	@echo "Cleaning up..."
-	@rm -f disneyland_paris_ways_and_nodes.json
+	@rm -f disneyland_paris.json prater_vienna.json
