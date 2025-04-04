@@ -679,10 +679,41 @@ function createTagValueFilters() {
 
   // For each active tag, show its values
   activeFilterKeys.forEach(tag => {
+    const tagSection = document.createElement('div');
+    tagSection.className = 'filter-tag-section';
+
     const tagHeader = document.createElement('div');
     tagHeader.className = 'filter-tag-header';
     tagHeader.textContent = tag;
-    fragment.appendChild(tagHeader);
+    tagSection.appendChild(tagHeader);
+
+    // Add search input for this tag
+    const searchContainer = document.createElement('div');
+    searchContainer.className = 'filter-search-container';
+
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.placeholder = 'Search values...';
+    searchInput.className = 'filter-search-input';
+    searchInput.dataset.tag = tag; // Store the tag this search is for
+
+    searchInput.addEventListener('input', (e) => {
+      const searchValue = e.target.value.toLowerCase();
+      const tag = e.target.dataset.tag;
+      const valueElements = tagSection.querySelectorAll('.filter-value');
+
+      valueElements.forEach(el => {
+        const labelText = el.querySelector('label').textContent.toLowerCase();
+        if (searchValue === '' || labelText.includes(searchValue)) {
+          el.style.display = '';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    });
+
+    searchContainer.appendChild(searchInput);
+    tagSection.appendChild(searchContainer);
 
     // Get values for this tag
     const { values, totalCount } = extractTagValues(tag);
@@ -694,12 +725,10 @@ function createTagValueFilters() {
 
     // Create value filters
     const valuesContainer = document.createElement('div');
-    valuesContainer.className = 'filter-values';
+    valuesContainer.className = 'filter-values-list';
 
-    // Only show top 20 values to avoid overwhelming the UI
-    const topValues = values.slice(0, 20);
-
-    topValues.forEach(({ value, count }) => {
+    // Show all values, we'll make it scrollable
+    values.forEach(({ value, count }) => {
       const valueContainer = document.createElement('div');
       valueContainer.className = 'filter-value';
 
@@ -727,14 +756,15 @@ function createTagValueFilters() {
     });
 
     // Show total count
-    if (values.length > 20) {
-      const moreInfo = document.createElement('div');
-      moreInfo.className = 'filter-more-info';
-      moreInfo.textContent = `Showing 20 of ${values.length} values`;
-      valuesContainer.appendChild(moreInfo);
+    if (values.length > 0) {
+      const infoText = document.createElement('div');
+      infoText.className = 'filter-value-count';
+      infoText.textContent = `${values.length} unique values`;
+      searchContainer.appendChild(infoText);
     }
 
-    fragment.appendChild(valuesContainer);
+    tagSection.appendChild(valuesContainer);
+    fragment.appendChild(tagSection);
   });
 
   // Replace all at once

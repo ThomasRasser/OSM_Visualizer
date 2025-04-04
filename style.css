@@ -27,7 +27,7 @@ body {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    max-width: 600px;
+    max-width: 650px;
 }
 
 .section {
@@ -62,21 +62,23 @@ body {
 
 .filter-tag {
     display: flex;
-    align-items: center;
+    align-items: flex-start; /* Align to top to handle multi-line text */
     background-color: #f2f2f2;
     border-radius: 3px;
     padding: 3px 6px;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
     font-size: 0.85rem; /* Smaller font */
+    min-width: 0; /* Allow container to shrink */
+    max-width: 100%; /* Prevent overflow */
 }
 
 .filter-tag label {
     margin-left: 5px;
     font-size: 0.85rem; /* Smaller font */
-    white-space: nowrap; /* Keep on one line */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 110px; /* Limit width */
+    overflow: visible; /* Allow text to be fully visible */
+    white-space: normal; /* Allow wrapping of text */
+    word-break: break-word; /* Break long words if needed */
+    max-width: none; /* Remove width constraint */
 }
 
 .filter-values-container {
@@ -85,20 +87,51 @@ body {
     padding: 5px;
 }
 
+.filter-tag-section {
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+}
+
 .filter-tag-header {
     font-weight: bold;
-    margin-top: 10px;
+    margin-top: 5px;
     margin-bottom: 5px;
     padding-bottom: 3px;
     border-bottom: 1px dashed #ccc;
 }
 
-.filter-values {
+.filter-search-container {
     display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 10px;
-    padding-left: 5px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.filter-search-input {
+    flex: 1;
+    padding: 5px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.filter-value-count {
+    margin-left: 10px;
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.filter-values-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 5px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background-color: #fafafa;
 }
 
 .filter-value {
@@ -109,15 +142,16 @@ body {
     padding: 2px 5px;
     margin-bottom: 2px;
     font-size: 0.85rem;
+    width: 100%;
 }
 
 .filter-value label {
     margin-left: 5px;
     font-size: 0.85rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 110px;
+    word-break: break-word; /* Allow breaking of long words */
+    overflow: visible; /* Allow text to be fully visible */
+    white-space: normal; /* Allow wrapping to next line */
+    max-width: none; /* Remove width constraint */
 }
 
 .filter-more-info {
