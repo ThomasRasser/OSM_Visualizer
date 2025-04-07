@@ -22,6 +22,8 @@ const disableAllFiltersButton = document.getElementById('disableAllFilters');
 const dataFileSelector = document.getElementById('dataFile');
 const loadingIndicator = document.getElementById('loadingIndicator');
 const loadingText = document.getElementById('loadingText');
+const globalFilterSearch = document.getElementById('globalFilterSearch');
+const globalSearchResults = document.getElementById('globalSearchResults');
 
 // App state
 let nodeSize = 2;
@@ -673,9 +675,76 @@ function createTagValueFilters() {
   // Get active filter keys
   const activeFilterKeys = Object.keys(activeFilters).filter(key => activeFilters[key]);
 
+  // Show/hide global search based on active filters
+  const globalSearchContainer = document.querySelector('.global-filter-search');
   if (activeFilterKeys.length === 0) {
     tagValuesContainer.innerHTML = '<div class="filter-info">Select a tag filter to see values</div>';
+    globalSearchContainer.style.display = 'none';
     return;
+  } else {
+    globalSearchContainer.style.display = 'block';
+  }
+
+  // Set up global search if not already done
+  if (!globalFilterSearch._hasEventListener) {
+    globalFilterSearch.addEventListener('input', (e) => {
+      const searchValue = e.target.value.trim().toLowerCase();
+
+      // Apply filter to all tag sections
+      const allTagSections = tagValuesContainer.querySelectorAll('.filter-tag-section');
+
+      allTagSections.forEach(section => {
+        const valueElements = section.querySelectorAll('.filter-value');
+        let visibleCount = 0;
+
+        valueElements.forEach(el => {
+          const labelText = el.querySelector('label').textContent.toLowerCase();
+          if (searchValue === '' || labelText.includes(searchValue)) {
+            el.style.display = '';
+            visibleCount++;
+          } else {
+            el.style.display = 'none';
+          }
+        });
+
+        // Hide entire section if no matching values
+        if (visibleCount === 0) {
+          section.style.display = 'none';
+        } else {
+          section.style.display = '';
+        }
+
+        // Also reset the individual search input for this section
+        const sectionSearchInput = section.querySelector('.filter-search-input');
+        if (sectionSearchInput && searchValue) {
+          sectionSearchInput.value = '';
+        }
+      });
+
+      // Show a message if all sections are hidden
+      const visibleSections = tagValuesContainer.querySelectorAll('.filter-tag-section[style=""]');
+      if (visibleSections.length === 0 && searchValue !== '') {
+        // Check if we already have a no-results message
+        let noResultsMsg = tagValuesContainer.querySelector('.global-no-results');
+        if (!noResultsMsg) {
+          noResultsMsg = document.createElement('div');
+          noResultsMsg.className = 'global-no-results';
+          noResultsMsg.textContent = 'No matching values found in any filter';
+          tagValuesContainer.appendChild(noResultsMsg);
+        } else {
+          noResultsMsg.style.display = '';
+        }
+      } else {
+        // Hide the no-results message if we have visible sections
+        const noResultsMsg = tagValuesContainer.querySelector('.global-no-results');
+        if (noResultsMsg) {
+          noResultsMsg.style.display = 'none';
+        }
+      }
+    });
+
+    // Mark that we've added the event listener
+    globalFilterSearch._hasEventListener = true;
   }
 
   // Use DocumentFragment for better performance
@@ -683,6 +752,14 @@ function createTagValueFilters() {
 
   // For each active tag, show its values
   activeFilterKeys.forEach(tag => {
+    // Get values for this tag
+    const { values, totalCount } = extractTagValues(tag);
+
+    // Skip tags with no values
+    if (values.length === 0) {
+      return;
+    }
+
     const tagSection = document.createElement('div');
     tagSection.className = 'filter-tag-section';
 
@@ -703,24 +780,27 @@ function createTagValueFilters() {
 
     searchInput.addEventListener('input', (e) => {
       const searchValue = e.target.value.toLowerCase();
-      const tag = e.target.dataset.tag;
       const valueElements = tagSection.querySelectorAll('.filter-value');
 
+      let visibleCount = 0;
       valueElements.forEach(el => {
         const labelText = el.querySelector('label').textContent.toLowerCase();
         if (searchValue === '' || labelText.includes(searchValue)) {
           el.style.display = '';
+          visibleCount++;
         } else {
           el.style.display = 'none';
         }
       });
+
+      // Clear the global search when using individual search
+      if (searchValue) {
+        globalFilterSearch.value = '';
+      }
     });
 
     searchContainer.appendChild(searchInput);
     tagSection.appendChild(searchContainer);
-
-    // Get values for this tag
-    const { values, totalCount } = extractTagValues(tag);
 
     // Initialize if not exists
     if (!activeFilterValues[tag]) {
@@ -771,8 +851,7 @@ function createTagValueFilters() {
     fragment.appendChild(tagSection);
   });
 
-  // Replace all at once
-  tagValuesContainer.innerHTML = '';
+  // Add all sections
   tagValuesContainer.appendChild(fragment);
 }
 
