@@ -1,6 +1,6 @@
 .PHONY: all clean disneyland prater europapark
 
-all: clean disneyland_paris.json prater_vienna.json
+all: clean disneyland_paris.json prater_vienna.json familypark_neusiedlersee.json
 
 disneyland_paris.json:
 	@echo "Fetching Disneyland (Paris) data..."
@@ -15,6 +15,14 @@ prater_vienna.json:
 	@curl -s -X POST https://overpass-api.de/api/interpreter \
 	  -H "Content-Type: application/x-www-form-urlencoded" \
 	  --data-urlencode "data=[out:json][timeout:60];area[\"name\"=\"Wurstelprater\"]->.a;(way(area.a););(._;>;);out body;" \
+	  -o $@
+	@echo "Saved to $@"
+
+familypark_neusiedlersee.json:
+	@echo "Fetching Familypark (Neusiedlersee) data..."
+	@curl -s -X POST https://overpass-api.de/api/interpreter \
+	  -H "Content-Type: application/x-www-form-urlencoded" \
+	  --data-urlencode "data=[out:json][timeout:60];area[\"name\"=\"Familypark Neusiedlersee\"]->.a;(way(area.a););(._;>;);out body;" \
 	  -o $@
 	@echo "Saved to $@"
 
